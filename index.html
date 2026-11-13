@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dạo Phố Đi Bộ Hồ Ea Kao</title>
+<style>
+body{margin:0;padding:0;background:#1b4332;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Arial,sans-serif;color:#fff;touch-action:manipulation}
+h1{font-size:18px;margin:8px 0 4px;color:#ffd166;text-transform:uppercase}
+p{font-size:12px;margin:0 0 8px;color:#b7e4c7}
+canvas{border:4px solid #ffd166;border-radius:12px;max-width:95vw;background:#8ecae6}
+.ft{font-size:11px;color:#95d5b2;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<h1>🌊 Dạo Phố Đi Bộ Hồ Ea Kao</h1>
+<p>Chạm màn hình vượt Tạp Hóa Vui Vẻ & Phố Đi Bộ!</p>
+<canvas id="c" width="330" height="480"></canvas>
+<div class="ft">Tài trợ: <b>Tạp Hóa Vui Vẻ & Tiệm Kem Ngã Tư Ea Kao</b></div>
+<script>
+var c=document.getElementById("c"),ctx=c.getContext("2d");
+var py=210,pv=0,g=0.34,jp=-6.0,px=65,pr=15,obs=[],fc=0,sc=0,best=localStorage.getItem("ek_hard_best")||0,over=false,start=false,hit="",wv=0,colIdx=0,lastLv=0,lvTimer=0;
+var gObs=[{n:"Bụi Gai",i:"🌵",cl:"#2d6a4f"},{n:"Trơn Trượt",i:"💧",cl:"#0077b6"},{n:"Dê Đen",i:"🐐",cl:"#2b2d42"},{n:"Cá Sấu",i:"🐊",cl:"#386641"},{n:"Cá Trắm",i:"🐟",cl:"#457b9d"}];
+var aObs=[{n:"Đại Bàng",i:"🦅",cl:"#6c584c"},{n:"Cồng Chiêng",i:"🪘",cl:"#d4a373"},{n:"Cá Chép",i:"🐠",cl:"#e76f51"}];
+var clouds=[{x:40,y:55,s:0.3},{x:190,y:85,s:0.25},{x:290,y:45,s:0.35}];
+var storks=[{x:120,y:70,s:0.7},{x:260,y:105,s:0.6}];
+function getLevel(s){
+if(s<30)return 0;
+if(s<50)return 1;
+if(s<100)return 2;
+if(s<=1000)return 3+Math.floor((s-100)/50);
+return 21+Math.floor((s-1000)/100);
+}
+function tap(){if(!start)start=true;if(over){py=210;pv=0;obs=[];sc=0;fc=0;over=false;hit="";colIdx=0;lastLv=0;lvTimer=0;}else pv=jp;}
+c.addEventListener("touchstart",function(e){e.preventDefault();tap();});
+c.addEventListener("mousedown",tap);
+function drawVText(txt,x,y,h){
+if(h<45)return;
+ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);
+ctx.fillStyle="rgba(255,255,255,0.9)";ctx.font="bold 11px Arial";ctx.textAlign="center";
+ctx.fillText(txt,0,4);ctx.restore();
+}
+function loop(){
+var lv=getLevel(sc);
+if(lv>lastLv){lastLv=lv;lvTimer=90;}
+var spd=2.6+Math.min(lv*0.18,3.6);
+wv+=spd*0.6;
+for(var k=0;k<clouds.length;k++){clouds[k].x-=clouds[k].s;if(clouds[k].x<-50)clouds[k].x=360;}
+for(var k=0;k<storks.length;k++){storks[k].x-=storks[k].s;if(storks[k].x<-30)storks[k].x=350;}
+if(start&&!over){
+pv+=g;py+=pv;
+var spawnRate=Math.max(60,Math.floor(110-lv*2.2));
+if(fc%spawnRate===0){
+var gap=Math.max(88,118-lv*1.4);
+var topH=Math.floor(Math.random()*(350-gap))+45;
+var mv=(lv>=1&&Math.random()<(0.3+lv*0.03))?((Math.random()>0.5?1:-1)*(0.5+Math.min(lv*0.08,1.5))):0;
+var lbl=(colIdx%2===0)?"TẠP HÓA VUI VẺ":"PHỐ ĐI BỘ EA KAO";
+colIdx++;
+obs.push({x:330,w:48,t:topH,b:topH+gap,gap:gap,mv:mv,lbl:lbl,a:aObs[Math.floor(Math.random()*3)],g:gObs[Math.floor(Math.random()*5)],p:false});
+}
+for(var i=0;i<obs.length;i++){var o=obs[i];o.x-=spd;
+if(o.mv!==0){o.t+=o.mv;o.b=o.t+o.gap;if(o.t<38||o.b>398)o.mv=-o.mv;}
+if(px+pr-3>o.x&&px-pr+3<o.x+o.w){if(py-pr+3<o.t){hit=o.a.n+" ("+o.lbl+")";over=true;}if(py+pr-3>o.b){hit=o.g.n+" ("+o.lbl+")";over=true;}}
+if(!o.p&&o.x+o.w<px){sc++;o.p=true;if(sc>best){best=sc;localStorage.setItem("ek_hard_best",best);}}}
+if(obs.length>0&&obs.x<-55)obs.shift();
+if(py+pr>420){hit="Rơi xuống hồ Ea Kao";over=true;}
+if(py-pr<0){py=pr;pv=0;}
+fc++;
+}
+var sky=ctx.createLinearGradient(0,0,0,420);sky.addColorStop(0,"#4ea8de");sky.addColorStop(1,"#caf0f8");
+ctx.fillStyle=sky;ctx.fillRect(0,0,330,420);
+ctx.fillStyle="rgba(255,255,255,0.85)";
+for(var k=0;k<clouds.length;k++){var cl=clouds[k];ctx.beginPath();ctx.arc(cl.x,cl.y,14,0,Math.PI*2);ctx.arc(cl.x+14,cl.y-4,17,0,Math.PI*2);ctx.arc(cl.x+28,cl.y,13,0,Math.PI*2);ctx.fill();}
+ctx.font="18px Arial";ctx.textAlign="center";
+for(var k=0;k<storks.length;k++){ctx.fillText("🕊️",storks[k].x,storks[k].y);}
+ctx.fillStyle="#52b788";ctx.beginPath();ctx.moveTo(0,420);ctx.quadraticCurveTo(165,320,330,420);ctx.fill();
+ctx.fillStyle="#e9c46a";ctx.fillRect(0,420,330,18);
+ctx.fillStyle="#d4a373";for(var x=-20;x<350;x+=30)ctx.fillRect(x-(wv%30),426,15,3);
+ctx.fillStyle="#0096c7";ctx.fillRect(0,438,330,42);
+ctx.fillStyle="#90e0ef";for(var x=-20;x<350;x+=40)ctx.fillRect(x-(wv%40),452,22,3);
+for(var i=0;i<obs.length;i++){var o=obs[i];
+ctx.fillStyle=o.a.cl;ctx.fillRect(o.x,0,o.w,o.t);ctx.strokeStyle="#fff";ctx.strokeRect(o.x,0,o.w,o.t);
+drawVText(o.lbl,o.x+24,(o.t-28)/2,o.t-28);
+ctx.font="22px Arial";ctx.textAlign="center";ctx.fillText(o.a.i,o.x+24,o.t-8);
+var bH=420-o.b;
+ctx.fillStyle=o.g.cl;ctx.fillRect(o.x,o.b,o.w,bH);ctx.strokeRect(o.x,o.b,o.w,bH);
+ctx.fillText(o.g.i,o.x+24,o.b+24);
+drawVText(o.lbl,o.x+24,o.b+28+(bH-28)/2,bH-28);}
+ctx.font="28px Arial";ctx.textAlign="center";ctx.fillText("🏃",px,py+10);
+ctx.fillStyle="#1b4332";ctx.font="bold 28px Arial";ctx.fillText(sc,165,42);
+ctx.font="bold 12px Arial";ctx.fillText("Cấp độ: "+lv,165,60);
+if(lvTimer>0){lvTimer--;ctx.fillStyle="#d62828";ctx.font="bold 16px Arial";ctx.fillText("🔥 TĂNG TỐC - CẤP "+lv+"!",165,90);}
+if(!start){ctx.fillStyle="rgba(0,0,0,0.6)";ctx.fillRect(0,0,330,480);ctx.fillStyle="#ffd166";ctx.font="bold 17px Arial";ctx.fillText("CHẠM ĐỂ DẠO PHỐ HỒ EA KAO",165,225);ctx.fillStyle="#fff";ctx.font="12px Arial";ctx.fillText("Vượt mốc 30, 50, 100... để chinh phục kỷ lục!",165,250);}
+if(over){var d=new Date(),ts=d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})+" - "+d.toLocaleDateString('vi-VN');
+ctx.fillStyle="rgba(0,0,0,0.82)";ctx.fillRect(20,120,290,220);ctx.strokeStyle="#ffd166";ctx.lineWidth=3;ctx.strokeRect(20,120,290,220);
+ctx.fillStyle="#ef476f";ctx.font="bold 20px Arial";ctx.fillText("DỪNG BƯỚC RỒI!",165,155);
+ctx.fillStyle="#ffd166";ctx.font="bold 13px Arial";ctx.fillText("Va phải: "+hit,165,182);
+ctx.fillStyle="#fff";ctx.font="15px Arial";ctx.fillText("Quãng đường: "+sc+" điểm (Cấp "+lv+")",165,212);ctx.fillText("Kỷ lục cá nhân: "+best+" điểm",165,236);
+ctx.fillStyle="#b7e4c7";ctx.font="12px Arial";ctx.fillText("Thời gian: "+ts,165,266);
+ctx.fillStyle="#95d5b2";ctx.font="bold 14px Arial";ctx.fillText("👉 Chạm màn hình để thử lại",165,305);}
+requestAnimationFrame(loop);}
+loop();
+</script>
+</body>
+</html>
